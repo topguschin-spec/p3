@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Космический Мониторинг 3.0</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div id="loading-screen">
+        <div class="loader">
+            <div class="orbit"></div>
+            <div class="satellite"></div>
+            <div class="loading-text">ИНИЦИАЛИЗАЦИЯ СИСТЕМ...</div>
+        </div>
+    </div>
+
+    <div id="main-interface" class="hidden">
+        <!-- 3D Космическая сцена -->
+        <div id="space-scene"></div>
+
+        <!-- Основной интерфейс -->
+        <div class="container">
+            <!-- Верхняя панель -->
+            <header class="control-panel">
+                <div class="mission-time">
+                    <span>🕒 ВРЕМЯ МИССИИ: <span id="mission-timer">00:00:00</span></span>
+                </div>
+                <div class="emergency-status">
+                    <div class="status-indicator" id="global-status">НОРМА</div>
+                    <button class="emergency-btn" id="emergency-protocol">🚨 АВАРИЙНЫЙ ПРОТОКОЛ</button>
+                </div>
+            </header>
+
+            <!-- Центральная панель с 3D визуализацией -->
+            <div class="main-display">
+                <div class="holographic-display">
+                    <div class="hologram" id="earth-hologram">
+                        <div class="hologram-globe"></div>
+                        <div class="orbit-ring"></div>
+                        <div class="satellite-marker"></div>
+                    </div>
+                    
+                    <div class="sensor-grid">
+                        <div class="sensor-card" data-sensor="temperature">
+                            <div class="sensor-icon">🌡</div>
+                            <div class="sensor-value" id="temp-value">24.5°C</div>
+                            <div class="sensor-graph" id="temp-graph"></div>
+                        </div>
+                        
+                        <div class="sensor-card" data-sensor="radiation">
+                            <div class="sensor-icon">☢️</div>
+                            <div class="sensor-value" id="rad-value">12,500 лк</div>
+                            <div class="sensor-graph" id="rad-graph"></div>
+                        </div>
+                        
+                        <div class="sensor-card" data-sensor="oxygen">
+                            <div class="sensor-icon">💨</div>
+                            <div class="sensor-value" id="oxy-value">98.5%</div>
+                            <div class="sensor-progress">
+                                <div class="progress-bar" id="oxy-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Нижняя панель управления -->
+            <div class="control-grid">
+                <!-- Левая колонка - Системы -->
+                <div class="control-section">
+                    <h3>🛰 СИСТЕМЫ КОРАБЛЯ</h3>
+                    <div class="system-controls">
+                        <div class="system-item">
+                            <label>🌀 СИСТЕМА ВЕНТИЛЯЦИИ</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="fan-control" class="toggle-input">
+                                <label for="fan-control" class="toggle-label"></label>
+                            </div>
+                        </div>
+                        
+                        <div class="system-item">
+                            <label>🔦 ОСВЕЩЕНИЕ</label>
+                            <input type="range" id="light-control" min="0" max="100" value="75" class="slider">
+                            <span id="light-value">75%</span>
+                        </div>
+                        
+                        <div class="system-item">
+                            <label>🔊 КОММУНИКАЦИИ</label>
+                            <div class="button-group">
+                                <button class="cmd-btn" data-action="comms-on">ВКЛ</button>
+                                <button class="cmd-btn" data-action="comms-off">ВЫКЛ</button>
+                                <button class="cmd-btn" data-action="comms-test">ТЕСТ</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Центральная колонка - Навигация -->
+                <div class="control-section">
+                    <h3>🧭 НАВИГАЦИЯ</h3>
+                    <div class="navigation-controls">
+                        <div class="nav-display">
+                            <canvas id="orbit-chart"></canvas>
+                        </div>
+                        <div class="nav-buttons">
+                            <button class="nav-btn" id="course-adjust">📐 КОРРЕКТИРОВКА КУРСА</button>
+                            <button class="nav-btn" id="auto-pilot">🤖 АВТОПИЛОТ</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Правая колонка - Наука -->
+                <div class="control-section">
+                    <h3>🔬 НАУЧНЫЕ ДАННЫЕ</h3>
+                    <div class="science-controls">
+                        <div class="data-stream">
+                            <div class="stream-header">
+                                <span>📡 СПЕКТРАЛЬНЫЙ АНАЛИЗ</span>
+                                <button class="stream-toggle" id="spectrum-toggle">▶️</button>
+                            </div>
+                            <canvas id="spectrum-canvas"></canvas>
+                        </div>
+                        
+                        <div class="experiment-controls">
+                            <select id="experiment-select">
+                                <option value="spectrum">Спектральный анализ</option>
+                                <option value="radiation">Радиационный фон</option>
+                                <option value="atmosphere">Атмосферные пробы</option>
+                                <option value="gravity">Гравитационные измерения</option>
+                            </select>
+                            <button class="experiment-btn" id="start-experiment">🚀 ЗАПУСТИТЬ ЭКСПЕРИМЕНТ</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Панель аварийных систем -->
+            <div class="emergency-panel hidden" id="emergency-panel">
+                <div class="emergency-header">
+                    <h2>🚨 АВАРИЙНЫЙ ПРОТОКОЛ</h2>
+                    <div class="emergency-level">
+                        <span>УРОВЕНЬ ОПАСНОСТИ: </span>
+                        <select id="emergency-level">
+                            <option value="1">1 - НЕЗНАЧИТЕЛЬНЫЙ</option>
+                            <option value="2">2 - ПОВЫШЕННЫЙ</option>
+                            <option value="3">3 - ВЫСОКИЙ</option>
+                            <option value="4">4 - КРИТИЧЕСКИЙ</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="emergency-controls">
+                    <button class="emergency-action" data-action="isolate">🔒 ИЗОЛИРОВАТЬ ОТСЕКИ</button>
+                    <button class="emergency-action" data-action="backup">🔋 ПЕРЕКЛЮЧИТЬ НА РЕЗЕРВ</button>
+                    <button class="emergency-action" data-action="sos">🆘 АКТИВИРОВАТЬ SOS</button>
+                    <button class="emergency-action" data-action="evacuate">🚀 АВАРИЙНОЕ ПОКИДАНИЕ</button>
+                </div>
+                
+                <div class="emergency-status">
+                    <div class="status-item">
+                        <span>ЖИЗНЕОБЕСПЕЧЕНИЕ:</span>
+                        <div class="status-light" id="life-support-status"></div>
+                    </div>
+                    <div class="status-item">
+                        <span>ДВИГАТЕЛИ:</span>
+                        <div class="status-light" id="engine-status"></div>
+                    </div>
+                    <div class="status-item">
+                        <span>СВЯЗЬ:</span>
+                        <div class="status-light" id="comms-status"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Игровой режим -->
+            <div class="game-panel hidden" id="game-panel">
+                <div class="game-header">
+                    <h2>🎮 СИМУЛЯТОР КОСМИЧЕСКОЙ СТАНЦИИ</h2>
+                    <button class="close-game" id="close-game">✖️</button>
+                </div>
+                <div class="game-content">
+                    <div class="game-scene" id="game-scene">
+                        <!-- 3D игровая сцена будет здесь -->
+                    </div>
+                    <div class="game-controls">
+                        <button class="game-btn" data-game="orbit">🛰 ОРБИТАЛЬНЫЙ ПОЛЕТ</button>
+                        <button class="game-btn" data-game="repair">🔧 РЕМОНТ EVA</button>
+                        <button class="game-btn" data-game="navigation">🌌 НАВИГАЦИЯ</button>
+                        <button class="game-btn" data-game="docking">🚀 СТЫКОВКА</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Боковое меню -->
+        <nav class="side-menu">
+            <button class="menu-btn active" data-panel="main">📊 ГЛАВНАЯ</button>
+            <button class="menu-btn" data-panel="systems">🛰 СИСТЕМЫ</button>
+            <button class="menu-btn" data-panel="science">🔬 НАУКА</button>
+            <button class="menu-btn" data-panel="navigation">🧭 НАВИГАЦИЯ</button>
+            <button class="menu-btn" data-panel="communication">📡 СВЯЗЬ</button>
+            <button class="menu-btn" data-panel="game">🎮 ИГРА</button>
+            <button class="menu-btn" data-panel="settings">⚙️ НАСТРОЙКИ</button>
+        </nav>
+
+        <!-- Уведомления -->
+        <div class="notification-center">
+            <div class="notification" id="notification-template" style="display: none;">
+                <div class="notification-icon"></div>
+                <div class="notification-content">
+                    <div class="notification-title"></div>
+                    <div class="notification-message"></div>
+                </div>
+                <button class="notification-close">×</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
